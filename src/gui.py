@@ -22,6 +22,7 @@ class BoardGUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Colored Queens")
+        self.configure(padx=20, pady=20)
 
         self.board = Board()
         self.qm = QueenManager(self.board)
@@ -29,6 +30,7 @@ class BoardGUI(tk.Tk):
         self.queenPositions = []
         self.currentAnimIndex = 0
         self.isSolving = False
+        self.baseDisplay = []
 
         self.buildWidgets()
 
@@ -71,6 +73,7 @@ class BoardGUI(tk.Tk):
             self.fileEntry.insert(0, path)
             try:
                 self.board.load_from_file(path)
+                self.baseDisplay = [row[:] for row in self.board.display]
                 self.resizeCanvas()
                 self.drawBoard(backgroundOnly=True)
             except Exception as e:
@@ -87,6 +90,8 @@ class BoardGUI(tk.Tk):
         if not self.board.display:
             return
 
+        source = self.baseDisplay if self.baseDisplay else self.board.display
+
         color_map = {}
         palette = ["#f2f2f2", "#d9ead3", "#c9daf8", "#f4cccc",
                    "#fff2cc", "#d0e0e3", "#ead1dc", "#cfe2f3"]
@@ -94,7 +99,7 @@ class BoardGUI(tk.Tk):
 
         for y in range(self.board.row):
             for x in range(self.board.col):
-                ch = self.board.display[y][x]
+                ch = source[y][x]
 
                 if ch not in color_map:
                     color_map[ch] = palette[palette_idx % len(palette)]
@@ -168,15 +173,23 @@ class BoardGUI(tk.Tk):
     def workerExhaustive(self, path):
         try:
             self.board.load_from_file(path)
+            self.baseDisplay = [row[:] for row in self.board.display]
             self.qm = QueenManager(self.board)
 
-            ok, _ = self.board.exhaustiveSearch(self.qm, path)
+            def progressCallback(positions, tried):
+                self.after(0, lambda p=positions, t=tried: self.onExhaustiveProgress(p, t))
+
+            ok, _ = self.board.exhaustiveSearch(self.qm, path, progressCallback)
             positions = self.collectQueenPositionsFromManager() if ok else []
         except Exception as e:
             self.after(0, lambda: self.onExhaustiveDone(path, False, [], e))
             return
 
         self.after(0, lambda: self.onExhaustiveDone(path, ok, positions, None))
+
+    def onExhaustiveProgress(self, positions, tried):
+        self.queenPositions = positions
+        self.drawBoard(queens=self.queenPositions)
 
     def onExhaustiveDone(self, path, ok, positions, error):
         self.isSolving = False
@@ -193,12 +206,12 @@ class BoardGUI(tk.Tk):
 
         try:
             self.board.load_from_file(path)
+            self.baseDisplay = [row[:] for row in self.board.display]
             self.resizeCanvas()
         except Exception as e:
             messagebox.showerror("Error", f"Failed to reload board:\n{e}")
             return
-
-        self.startAnimation()
+        self.drawBoard(queens=self.queenPositions)
 
     def solveBacktrack(self):
         path = self.fileEntry.get().strip()
@@ -208,6 +221,7 @@ class BoardGUI(tk.Tk):
 
         try:
             self.board.load_from_file(path)
+            self.baseDisplay = [row[:] for row in self.board.display]
             self.resizeCanvas()
             self.qm = QueenManager(self.board)
 
@@ -216,6 +230,7 @@ class BoardGUI(tk.Tk):
             self.queenPositions = self.collectQueenPositionsFromManager()
 
             self.board.load_from_file(path)
+            self.baseDisplay = [row[:] for row in self.board.display]
             self.startAnimation()
         except Exception as e:
             messagebox.showerror("Error", f"Backtrack solve failed:\n{e}")
@@ -226,6 +241,7 @@ class BoardGUI(tk.Tk):
         try:
             if self.filePath:
                 self.board.load_from_file(self.filePath)
+                self.baseDisplay = [row[:] for row in self.board.display]
         except Exception:
             pass
         self.queenPositions = []
@@ -258,8 +274,3 @@ class BoardGUI(tk.Tk):
             messagebox.showinfo("Saved", f"Image saved to {png_path}")
         except Exception as e:
             messagebox.showerror("Error", f"Failed to convert to PNG:\n{e}")
-
-
-if __name__ == "__main__":
-    app = BoardGUI()
-    app.mainloop()

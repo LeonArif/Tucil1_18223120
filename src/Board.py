@@ -1,3 +1,6 @@
+import time
+
+
 class Board:
     def __init__(self):
         self.row = 0
@@ -103,7 +106,7 @@ class Board:
     #         if not self.moveQueen(indexPerColor):
     #             return False, originalDisplay
 
-    def exhaustiveSearch(self, queenManager, fileName):
+    def exhaustiveSearch(self, queenManager, fileName, progressCallback=None):
         colorsList = list(self.colors.values())
         k = len(colorsList)
         if k == 0:
@@ -112,6 +115,7 @@ class Board:
         originalDisplay = [row[:] for row in self.display]
 
         tried = 0
+        lastUpdate = time.time()
 
         while True:
             self.display = [row[:] for row in originalDisplay]
@@ -121,6 +125,16 @@ class Board:
             tried += 1
             if tried % 1000 == 0:
                 print("tried", tried, "combinations:", indexPerColor)
+
+            if progressCallback is not None:
+                now = time.time()
+                if now - lastUpdate >= 1.0:
+                    positions = list(zip(queenManager.queensX, queenManager.queensY))
+                    try:
+                        progressCallback(positions, tried)
+                    except Exception:
+                        pass
+                    lastUpdate = now
 
             if self.validChecker():
                 print("found after", tried, "combinations")
