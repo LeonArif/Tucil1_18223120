@@ -7,7 +7,7 @@ from Board import Board
 from QueenManager import QueenManager
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageGrab
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
@@ -253,24 +253,92 @@ class BoardGUI(tk.Tk):
             messagebox.showwarning("Warning", "No solution to save yet.")
             return
 
-        self.drawBoard(queens=self.queenPositions)
-
-        os.makedirs("../output", exist_ok=True)
-        ps_path = "../output/solution.ps"
-        self.canvas.postscript(file=ps_path)
-
+        baseDir = os.path.dirname(os.path.abspath(__file__))
+        outputDir = os.path.join(baseDir, "..", "output")
+        os.makedirs(outputDir, exist_ok=True)
+        
         if not PIL_AVAILABLE:
+            psPath = os.path.join(outputDir, "solution.ps")
+            self.canvas.postscript(file=psPath)
             messagebox.showinfo(
                 "Saved",
-                f"PostScript saved to {ps_path}\n"
-                f"Install Pillow to auto-convert to PNG."
+                f"PostScript saved to {psPath}\n"
+                f"Install Pillow to save PNG automatically."
             )
             return
 
         try:
-            img = Image.open(ps_path)
-            png_path = "../output/solution.png"
-            img.save(png_path)
-            messagebox.showinfo("Saved", f"Image saved to {png_path}")
+            pngPath = os.path.join(outputDir, "solution.png")
+            self.renderBoardToPNG(pngPath)
+            messagebox.showinfo("Saved", f"Image saved to {pngPath}")
+            
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to convert to PNG:\n{e}")
+            messagebox.showerror("Error", f"Failed to save PNG:\n{e}")
+
+
+    def renderBoardToPNG(self, filepath):
+        """Render board directly to PNG using PIL"""
+        from PIL import Image, ImageDraw, ImageFont
+        
+        width = self.board.col * CELL_SIZE + 2 * PADDING
+        height = self.board.row * CELL_SIZE + 2 * PADDING
+        
+        img = Image.new('RGB', (width, height), 'white')
+        draw = ImageDraw.Draw(img)
+        
+        try:
+            font = ImageFont.truetype("arial.ttf", 14)
+            font_bold = ImageFont.truetype("arialbd.ttf", 14)
+        except:
+            font = ImageFont.load_default()
+            font_bold = font
+        
+        source = self.baseDisplay if self.baseDisplay else self.board.display
+        color_map = {}
+        palette = ["#f2f2f2", "#d9ead3", "#c9daf8", "#f4cccc",
+                "#fff2cc", "#d0e0e3", "#ead1dc", "#cfe2f3"]
+        palette_idx = 0
+        
+        for y in range(self.board.row):
+            for x in range(self.board.col):
+                ch = source[y][x]
+                
+                if ch not in color_map:
+                    color_map[ch] = palette[palette_idx % len(palette)]
+                    palette_idx += 1
+                
+                x1 = PADDING + x * CELL_SIZE
+                y1 = PADDING + y * CELL_SIZE
+                x2 = x1 + CELL_SIZE
+                y2 = y1 + CELL_SIZE
+                
+                draw.rectangle([x1, y1, x2, y2], 
+                            fill=color_map[ch], 
+                            outline='black', 
+                            width=1)
+                
+                bbox = draw.textbbox((0, 0), ch, font=font_bold)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                text_x = x1 + (CELL_SIZE - text_width) // 2
+                text_y = y1 + (CELL_SIZE - text_height) // 2
+                
+                draw.text((text_x, text_y), ch, fill='black', font=font_bold)
+        
+        for qx, qy in self.queenPositions:
+            x1 = PADDING + qx * CELL_SIZE + 4
+            y1 = PADDING + qy * CELL_SIZE + 4
+            x2 = x1 + CELL_SIZE - 8
+            y2 = y1 + CELL_SIZE - 8
+            
+            draw.ellipse([x1, y1, x2, y2], fill='black', outline='black')
+            
+            bbox = draw.textbbox((0, 0), "Q", font=font_bold)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            text_x = x1 + (CELL_SIZE - 8 - text_width) // 2
+            text_y = y1 + (CELL_SIZE - 8 - text_height) // 2
+            
+            draw.text((text_x, text_y), "Q", fill='white', font=font_bold)
+        
+        img.save(filepath, 'PNG')
