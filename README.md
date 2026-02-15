@@ -8,10 +8,10 @@ Diberikan sebuah papan berukuran $N \times N$ yang setiap selnya berisi sebuah h
 
 - Tidak ada dua ratu pada baris yang sama.
 - Tidak ada dua ratu pada kolom yang sama.
-- Tidak ada dua ratu yang saling menyerang secara diagonal.
+- Tidak ada dua ratu yang saling menyerang secara diagonal bersebelahan.
 - Setiap warna hanya boleh memiliki **paling banyak satu** ratu.
 
-Papan dibaca dari file teks, dan solusi (jika ada) dituliskan kembali ke file output `*_solution.txt` di folder yang sama dengan file input.
+Papan dibaca dari file teks, dan solusi (jika ada) dituliskan kembali ke file test `*_solution.txt` di folder yang sama dengan file input, serta pengguna bisa menyimpan output yang berupa image pada folder output.
 
 ## Struktur Folder
 
@@ -45,19 +45,19 @@ Dari root proyek:
 python src/main.py
 ```
 
-Atau, jika menggunakan skrip di `bin/` (opsional):
+Atau, menggunakan skrip di `bin/`
 
 - Windows:
 
   ```bash
-  bin\run_gui.bat
+  bin\run.bat
   ```
 
 - Linux/macOS:
 
   ```bash
-  chmod +x bin/run_gui.sh
-  ./bin/run_gui.sh
+  chmod +x bin/run.sh
+  ./bin/run.sh
   ```
 
 ### 2. Penggunaan GUI
