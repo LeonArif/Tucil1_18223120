@@ -1,5 +1,5 @@
 Metode: exhaustive
-Waktu pencarian: 2642.7753 ms
+Waktu pencarian: 2460.6802 ms
 #BCDEFGH
 ABC#EFGH
 A#CDEFGH
