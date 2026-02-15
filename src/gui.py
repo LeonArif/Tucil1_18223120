@@ -1,5 +1,6 @@
 
 import os
+import time
 import tkinter as tk
 from tkinter import filedialog, messagebox
 import threading
@@ -179,7 +180,17 @@ class BoardGUI(tk.Tk):
             def progressCallback(positions, tried):
                 self.after(0, lambda p=positions, t=tried: self.onExhaustiveProgress(p, t))
 
-            ok, _ = self.board.exhaustiveSearch(self.qm, path, progressCallback)
+            start_time = time.time()
+            ok, board_state = self.board.exhaustiveSearch(self.qm, path, progressCallback)
+            elapsed = time.time() - start_time
+
+            if ok:
+                print(f"Waktu pencarian (exhaustive): {elapsed:.4f} detik")
+                try:
+                    self.board.writeSolutionToFile(path, elapsed, board_state, "exhaustive")
+                except Exception as e:
+                    print(f"Gagal menyimpan solusi exhaustive: {e}")
+
             positions = self.collectQueenPositionsFromManager() if ok else []
         except Exception as e:
             self.after(0, lambda: self.onExhaustiveDone(path, False, [], e))

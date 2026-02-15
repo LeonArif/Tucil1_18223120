@@ -1,4 +1,5 @@
 import time
+import os
 
 
 class Board:
@@ -166,20 +167,59 @@ class Board:
     def solveExhaustive(self, queenManager, fileName):
         self.load_from_file(fileName)
         queenManager.__init__(self)
+
+        start_time = time.time()
         _ , results = self.exhaustiveSearch(queenManager, fileName)
+        end_time = time.time()
+        elapsed = end_time - start_time
+
+        print(f"Waktu pencarian (exhaustive): {elapsed:.4f} detik")
+
         for row in results:
             print("".join(row))
+
+        self.writeSolutionToFile(fileName, elapsed, results, "exhaustive")
 
         return self.display
     
     def solveBacktrack(self, queenManager, fileName):
         self.load_from_file(fileName)
         queenManager.__init__(self)
+
+        start_time = time.time()
         self.backtrack(0,queenManager)
+        end_time = time.time()
+        elapsed = end_time - start_time
+
+        print(f"Waktu pencarian (backtrack): {elapsed:.4f} detik")
 
         for row in self.display:
             print("".join(row))
 
+        self.writeSolutionToFile(fileName, elapsed, self.display, "backtrack")
+
         return self.display
+
+    def writeSolutionToFile(self, fileName, elapsed, board_state, method_name):
+        base = os.path.basename(fileName)
+        name_no_ext, _ = os.path.splitext(base)
+
+        dir_name = os.path.dirname(fileName)
+        if not dir_name:
+            dir_name = "test"
+
+        os.makedirs(dir_name, exist_ok=True)
+
+        output_path = os.path.join(dir_name, f"{name_no_ext}_solution.txt")
+
+        try:
+            with open(output_path, 'w') as f:
+                f.write(f"Metode: {method_name}\n")
+                f.write(f"Waktu pencarian: {elapsed:.4f} detik\n")
+                for row in board_state:
+                    f.write("".join(row) + "\n")
+            print(f"Solusi disimpan di: {output_path}")
+        except Exception as e:
+            print(f"Gagal menulis file solusi: {e}")
 
 
