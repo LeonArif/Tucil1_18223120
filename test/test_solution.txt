@@ -1,5 +1,5 @@
-Metode: exhaustive
-Waktu pencarian: 270.5791 detik
+Metode: backtrack
+Waktu pencarian: 0.0000 detik
 AAABBCC#D
 ABBB#CECD
 ABBBDC#CD

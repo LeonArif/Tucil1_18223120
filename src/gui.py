@@ -73,7 +73,7 @@ class BoardGUI(tk.Tk):
             self.fileEntry.delete(0, tk.END)
             self.fileEntry.insert(0, path)
             try:
-                self.board.load_from_file(path)
+                self.board.loadFromFile(path)
                 self.baseDisplay = [row[:] for row in self.board.display]
                 self.resizeCanvas()
                 self.drawBoard(backgroundOnly=True)
@@ -173,7 +173,7 @@ class BoardGUI(tk.Tk):
 
     def workerExhaustive(self, path):
         try:
-            self.board.load_from_file(path)
+            self.board.loadFromFile(path)
             self.baseDisplay = [row[:] for row in self.board.display]
             self.qm = QueenManager(self.board)
 
@@ -216,7 +216,7 @@ class BoardGUI(tk.Tk):
         self.queenPositions = positions
 
         try:
-            self.board.load_from_file(path)
+            self.board.loadFromFile(path)
             self.baseDisplay = [row[:] for row in self.board.display]
             self.resizeCanvas()
         except Exception as e:
@@ -231,7 +231,7 @@ class BoardGUI(tk.Tk):
             return
 
         try:
-            self.board.load_from_file(path)
+            self.board.loadFromFile(path)
             self.baseDisplay = [row[:] for row in self.board.display]
             self.resizeCanvas()
             self.qm = QueenManager(self.board)
@@ -240,7 +240,7 @@ class BoardGUI(tk.Tk):
 
             self.queenPositions = self.collectQueenPositionsFromManager()
 
-            self.board.load_from_file(path)
+            self.board.loadFromFile(path)
             self.baseDisplay = [row[:] for row in self.board.display]
             self.startAnimation()
         except Exception as e:
@@ -251,7 +251,7 @@ class BoardGUI(tk.Tk):
             return
         try:
             if self.filePath:
-                self.board.load_from_file(self.filePath)
+                self.board.loadFromFile(self.filePath)
                 self.baseDisplay = [row[:] for row in self.board.display]
         except Exception:
             pass

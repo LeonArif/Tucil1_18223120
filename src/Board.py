@@ -10,7 +10,7 @@ class Board:
         self.display = []
 
     
-    def load_from_file(self, fileName):
+    def loadFromFile(self, fileName):
         self.row = 0
         self.col = 0
         self.colors = {}
@@ -165,7 +165,7 @@ class Board:
         return False
 
     def solveExhaustive(self, queenManager, fileName):
-        self.load_from_file(fileName)
+        self.loadFromFile(fileName)
         queenManager.__init__(self)
 
         start_time = time.time()
@@ -183,7 +183,7 @@ class Board:
         return self.display
     
     def solveBacktrack(self, queenManager, fileName):
-        self.load_from_file(fileName)
+        self.loadFromFile(fileName)
         queenManager.__init__(self)
 
         start_time = time.time()
