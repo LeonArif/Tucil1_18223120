@@ -1,0 +1,10 @@
+Metode: exhaustive
+Waktu pencarian: 2642.7753 ms
+#BCDEFGH
+ABC#EFGH
+A#CDEFGH
+ABCDEF#H
+AB#DEFGH
+ABCD#FGH
+ABCDEFG#
+ABCDE#GH

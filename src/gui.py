@@ -174,6 +174,10 @@ class BoardGUI(tk.Tk):
     def workerExhaustive(self, path):
         try:
             self.board.loadFromFile(path)
+            # Validasi papan sebelum mulai exhaustive search
+            if not self.board.checkBoard():
+                raise ValueError("Board tidak valid: papan harus NxN dan memiliki N warna unik.")
+
             self.baseDisplay = [row[:] for row in self.board.display]
             self.qm = QueenManager(self.board)
 
@@ -182,10 +186,10 @@ class BoardGUI(tk.Tk):
 
             start_time = time.time()
             ok, board_state = self.board.exhaustiveSearch(self.qm, path, progressCallback)
-            elapsed = time.time() - start_time
+            elapsed = (time.time() - start_time)*1000
 
             if ok:
-                print(f"Waktu pencarian (exhaustive): {elapsed:.4f} detik")
+                print(f"Waktu pencarian (exhaustive): {elapsed:.4f} ms")
                 try:
                     self.board.writeSolutionToFile(path, elapsed, board_state, "exhaustive")
                 except Exception as e:
@@ -193,7 +197,8 @@ class BoardGUI(tk.Tk):
 
             positions = self.collectQueenPositionsFromManager() if ok else []
         except Exception as e:
-            self.after(0, lambda: self.onExhaustiveDone(path, False, [], e))
+            # Ikat exception ke argumen default lambda agar aman di Python 3.11+
+            self.after(0, lambda err=e: self.onExhaustiveDone(path, False, [], err))
             return
 
         self.after(0, lambda: self.onExhaustiveDone(path, ok, positions, None))
@@ -206,7 +211,7 @@ class BoardGUI(tk.Tk):
         self.isSolving = False
 
         if error is not None:
-            messagebox.showerror("Error", f"Exhaustive solve failed:\n{error}")
+            messagebox.showerror("Invalid Board", "Board harus NxN dan memiliki N warna unik.")
             return
 
         if not ok:
@@ -232,11 +237,19 @@ class BoardGUI(tk.Tk):
 
         try:
             self.board.loadFromFile(path)
+            if not self.board.checkBoard():
+                messagebox.showerror("Invalid Board", "Board harus NxN dan memiliki N warna unik.")
+                return
+
             self.baseDisplay = [row[:] for row in self.board.display]
             self.resizeCanvas()
             self.qm = QueenManager(self.board)
+            result = self.board.solveBacktrack(self.qm, path)
 
-            self.board.solveBacktrack(self.qm, path)
+            # Jika tidak ada solusi, tampilkan pesan di GUI dan berhenti
+            if result is None or not self.qm.queensX:
+                messagebox.showinfo("Info", "No solution found (backtrack).")
+                return
 
             self.queenPositions = self.collectQueenPositionsFromManager()
 

@@ -19,8 +19,16 @@ class Board:
         with open(fileName, 'r') as file:
             lines = file.readlines()
 
+        expected_len = None
+
         for y, line in enumerate(lines):
             row = list(line.strip('\n'))
+
+            if expected_len is None:
+                expected_len = len(row)
+            elif len(row) != expected_len:
+                raise ValueError("Setiap baris pada papan harus memiliki panjang yang sama.")
+
             self.display.append(row)
             for x, ch in enumerate(row):
                 if ch not in self.colors:
@@ -51,7 +59,7 @@ class Board:
             x, y = position[indexPerColor[i]]
             queenManager.place(x,y)
             i += 1
-
+            
     def validChecker(self):
         queenX = set()
         queenY = set()
@@ -113,14 +121,15 @@ class Board:
         if k == 0:
             return False
         indexPerColor = [0] * k
+    
         originalDisplay = [row[:] for row in self.display]
-
         tried = 0
         lastUpdate = time.time()
 
         while True:
             self.display = [row[:] for row in originalDisplay]
             queenManager.__init__(self)
+
             self.placeQueens(queenManager, indexPerColor)
 
             tried += 1
@@ -163,17 +172,33 @@ class Board:
                 queenManager.removeLatest()
 
         return False
+    
+    def checkBoard(self):
+        if self.row != self.col:
+            return False
+        if len(self.colors) != self.row or len(self.colors) != self.col:
+            return False
+        return True
 
     def solveExhaustive(self, queenManager, fileName):
         self.loadFromFile(fileName)
+
+        if not self.checkBoard():
+            print("Board tidak valid: papan harus NxN dan memiliki N warna unik.")
+            return
+
         queenManager.__init__(self)
 
         start_time = time.time()
-        _ , results = self.exhaustiveSearch(queenManager, fileName)
+        ok, results = self.exhaustiveSearch(queenManager, fileName)
         end_time = time.time()
-        elapsed = end_time - start_time
+        elapsed = (end_time - start_time)*1000
 
-        print(f"Waktu pencarian (exhaustive): {elapsed:.4f} detik")
+        print(f"Waktu pencarian (exhaustive): {elapsed:.4f} ms")
+        
+        if not ok:
+            print("Tidak ada solusi yang ditemukan (exhaustive).")
+            return None
 
         for row in results:
             print("".join(row))
@@ -184,14 +209,23 @@ class Board:
     
     def solveBacktrack(self, queenManager, fileName):
         self.loadFromFile(fileName)
+
+        if not self.checkBoard():
+            print("Board tidak valid: papan harus NxN dan memiliki N warna unik.")
+            return
+
         queenManager.__init__(self)
 
         start_time = time.time()
-        self.backtrack(0,queenManager)
+        found = self.backtrack(0,queenManager)
         end_time = time.time()
-        elapsed = end_time - start_time
+        elapsed = (end_time - start_time)*1000
 
-        print(f"Waktu pencarian (backtrack): {elapsed:.4f} detik")
+        print(f"Waktu pencarian (backtrack): {elapsed:.4f} ms")
+        
+        if not found:
+            print("Tidak ada solusi yang ditemukan (backtrack).")
+            return None
 
         for row in self.display:
             print("".join(row))
@@ -215,7 +249,7 @@ class Board:
         try:
             with open(output_path, 'w') as f:
                 f.write(f"Metode: {method_name}\n")
-                f.write(f"Waktu pencarian: {elapsed:.4f} detik\n")
+                f.write(f"Waktu pencarian: {elapsed:.4f} ms\n")
                 for row in board_state:
                     f.write("".join(row) + "\n")
             print(f"Solusi disimpan di: {output_path}")
