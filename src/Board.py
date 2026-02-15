@@ -96,25 +96,6 @@ class Board:
 
         return False
 
-
-    # def exhaustiveSearch(self, queenManager, fileName):
-    #     colorsList = list(self.colors.values())
-    #     k = len(colorsList)
-    #     if k == 0:
-    #         return False
-    #     indexPerColor = [0] * k
-    #     originalDisplay = [row[:] for row in self.display]
-
-    #     while True:
-    #         self.display = [row[:] for row in originalDisplay]
-    #         queenManager.__init__(self)
-    #         self.placeQueens(queenManager, indexPerColor)
-    #         if self.validChecker():
-    #             return True, self.display
-            
-    #         if not self.moveQueen(indexPerColor):
-    #             return False, originalDisplay
-
     def exhaustiveSearch(self, queenManager, fileName, progressCallback=None):
         colorsList = list(self.colors.values())
         k = len(colorsList)
