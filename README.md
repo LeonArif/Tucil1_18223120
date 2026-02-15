@@ -127,7 +127,3 @@ AAABBCC#D
 ABBB#CECD
 ...
 ```
-
-## Lisensi
-
-Tidak ada lisensi khusus; digunakan untuk keperluan akademik mata kuliah IF2211.
